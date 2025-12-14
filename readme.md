@@ -9,8 +9,7 @@ npm install
 ```
 node main.js
 ```
-## 调用方式
-```
+
 ## 2.接口描述
 ### 2.1 /html-to-pdf (将 HTML 文本转换为 PDF)
 - 方法: POST
