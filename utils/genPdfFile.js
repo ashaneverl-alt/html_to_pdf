@@ -17,47 +17,61 @@ async function getBrowserInstance() {
 async function generatePDFFromHTML(htmlString) {
     console.log("generatePDFFromHTML");
 
-    // const pdfBuffer = await page.pdf({path: 'output.pdf', format: 'a4', rotation: 180});
     try {
-            // 启动Puppeteer
-    const browser = await getBrowserInstance();
-    const page = await browser.newPage();
-         // 页眉
+        const browser = await getBrowserInstance();
+        const page = await browser.newPage();
+        
         let headerTemplate = "";
-        // 页脚
         let footerTemplate = "";
+        let updatedHtmlString = htmlString;
+        
+        // 构建页眉
         {
-            // 构建页眉
-            console.log("headerTemplate");
             let dom = new JSDOM(htmlString);
             let document = dom.window.document;
             const elementsToRemove = document.querySelectorAll(".page_start");
-            if(elementsToRemove.length > 0) {
+            if (elementsToRemove.length > 0) {
                 headerTemplate = elementsToRemove[0].outerHTML;
             }
             elementsToRemove.forEach(el => el.parentNode.removeChild(el));  
             updatedHtmlString = dom.serialize();
         }
     
+        // 构建页脚
         {
-            // 构建页脚
-            console.log("footerTemplate");
-            dom = new JSDOM(updatedHtmlString);
-            document = dom.window.document;
+            let dom = new JSDOM(updatedHtmlString);
+            let document = dom.window.document;
             const endelementsToRemove = document.querySelectorAll(".page_end");
-            if(endelementsToRemove.length > 0) {
+            if (endelementsToRemove.length > 0) {
                 footerTemplate = endelementsToRemove[0].outerHTML;
             }
             endelementsToRemove.forEach(el => el.parentNode.removeChild(el));  
             updatedHtmlString = dom.serialize();
         }
         
-        // 设置HTML内容并生成PDF的Buffer
-        await page.setContent(updatedHtmlString);
+        // 设置内容并等待所有资源加载完成
+        await page.setContent(updatedHtmlString, {
+            waitUntil: ['load', 'networkidle0'],  // 网络空闲即可认为静态资源已就位
+            timeout: 30000
+        });
 
-        // 设置 PDF 选项
+        // 给可能存在的 Canvas/SVG/图片等 JS 渲染内容留一点时间
+        // 1. 如果页面有 canvas 或 svg，稍微多等一会儿
+        const hasDynamicElements = await page.evaluate(() => {
+            return document.querySelectorAll('canvas, svg').length > 0;
+        });
+
+        if (hasDynamicElements) {
+            console.log("检测到 canvas 或 svg，额外等待动态内容渲染...");
+            // 最多等 3 秒
+            await page.waitForTimeout(3000);
+        } else {
+            console.log("页面为纯静态内容，无需额外等待");
+            // 纯静态页面可以再快一点
+            await page.waitForTimeout(500);
+        }
+
         const pdfOptions = {
-            path: 'example.pdf',
             format: 'a4',
             displayHeaderFooter: true,
             headerTemplate,
@@ -68,17 +82,19 @@ async function generatePDFFromHTML(htmlString) {
                 left: '20px',
                 right: '50px'
             },
-
+            printBackground: true,
         };
-        // 生成 PDF
-         // 如果要生成带着 screen media的pdf，在page.pdf() 前面先调用 page.emulateMedia('screen')
+        
         const pdfBuffer = await page.pdf(pdfOptions);
+        
+        await page.close();
+        
         return pdfBuffer;
-    } catch(error) {
-        console.log(error);
+    } catch (error) {
+        console.error('生成PDF错误:', error);
+        throw error;
     }
 }
-
 
 module.exports = {
     getBrowserInstance,
