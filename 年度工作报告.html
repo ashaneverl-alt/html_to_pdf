@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF页头页尾示例</title>
+    <style>
+        body {
+            font-family: 'Arial', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            /* padding: 20px; */
+            line-height: 1.6;
+        }
+
+        /* 如果需要换页，就在上一个元素class中添加pageBreak */
+        .pageBreak
+        {
+            page-break-after: always;
+        }
+
+
+        .content h1 {
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .content h2 {
+            color: #667eea;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+
+        .content p {
+            color: #555;
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        .content ul {
+            margin-left: 20px;
+        }
+
+        .content li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .highlight-box {
+            background-color: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- 页头 - 这部分会被提取为headerTemplate -->
+    <div class="page_start">
+        <style>
+            /* 页头样式必须写在这里 */
+            .page_start_content, .page_start {
+                width: 100%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-sizing: border-box;
+                font-size: 12px;
+            }
+
+            .page_start_content {
+                padding-right: 30px;
+            }
+            .page_start_content .logo {
+                font-weight: bold;
+                font-size: 16px;
+            }
+
+            .page_start_content .date {
+                font-size: 11px;
+            }
+        </style>
+        <div class="page_start_content">
+            <div class="logo">📄 我的公司报告</div>
+            <div class="date">生成日期: 2024-12-14</div>
+        </div>
+    </div>
+
+    <!-- 页脚 - 这部分会被提取为footerTemplate -->
+    <div class="page_end">
+        <style>
+            /* 页脚样式 - 注意class名称为 page_end */
+            .page_end_content,.page_end {
+                width: 100%;
+                background-color: #f8f9fa;
+                border-top: 2px solid #667eea;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-sizing: border-box;
+                font-size: 10px;
+                color: #666;
+            }
+
+            .page_end_content {
+                padding-right: 30px;
+            }
+
+            .page_end_content .page-number::before {
+                content: "第 ";
+            }
+
+            .page_end_content .page-number::after {
+                content: " 页";
+            }
+        </style>
+        <div class="page_end_content">
+            <div class="copyright">© 2024 我的公司. 保留所有权利.</div>
+            <div class="page-info">
+                <span class="page-number"><span class="pageNumber"></span></span> / 
+                <span class="total-pages"><span class="totalPages"></span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 正文内容 -->
+    <div class="content">
+        <h1>年度工作报告</h1>
+        
+        <div class="highlight-box">
+            <strong>📌 重要提示：</strong> 这是一个完整的PDF页头页尾示例，包含了页码、公司信息等元素。
+        </div>
+
+        <h2>一、项目概述</h2>
+        <p>
+            本年度我们完成了多个重要项目的开发和部署工作。通过团队的共同努力，我们在技术创新、产品质量和客户满意度方面都取得了显著进步。以下是本年度的主要工作内容和成果总结。
+        </p>
+
+        <h2>二、主要成果</h2>
+        <ul>
+            <li><strong>技术升级：</strong>完成了核心系统的架构升级，性能提升了40%</li>
+            <li><strong>新产品发布：</strong>成功发布了3款新产品，市场反响良好</li>
+            <li><strong>团队建设：</strong>团队规模扩大至50人，引进多名资深工程师</li>
+            <li><strong>客户满意度：</strong>客户满意度从85%提升至92%</li>
+        </ul>
+
+        <h2>三、数据分析</h2>
+        <div class="chart-container pageBreak">
+            <canvas id="myChart" width="600" height="300"></canvas>
+        </div>
+
+        <h2>四、下一步计划</h2>
+        <p>
+            展望未来，我们将继续深化技术创新，扩大市场份额，提升服务质量。计划在下一年度实现营收增长30%，同时加大研发投入，推出更多创新产品。
+        </p>
+
+        <div style="height: 800px; padding: 40px; background-color: #f9f9f9; margin-top: 40px;">
+            <h2>五、详细数据统计</h2>
+            <p>这里是第二页的内容，用于测试页码和页头页尾在多页文档中的显示效果。</p>
+            <p>可以看到，每一页都会有统一的页头和页脚，页码会自动递增。</p>
+        </div>
+
+        <div style="height: 800px; padding: 40px; background-color: #fff; margin-top: 40px;">
+            <h2>六、附录</h2>
+            <p>这是第三页的内容。Puppeteer会自动处理分页，并在每页顶部和底部显示页头页尾。</p>
+        </div>
+    </div>
+
+    <!-- 引入Chart.js用于绘制图表 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.js"></script>
+    <script>
+        // 创建示例图表
+        var ctx = document.getElementById('myChart');
+        if (ctx) {
+            var myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                    datasets: [{
+                        label: '季度营收 (万元)',
+                        data: [120, 190, 150, 220],
+                        backgroundColor: [
+                            'rgba(102, 126, 234, 0.6)',
+                            'rgba(118, 75, 162, 0.6)',
+                            'rgba(102, 126, 234, 0.6)',
+                            'rgba(118, 75, 162, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(102, 126, 234, 1)',
+                            'rgba(118, 75, 162, 1)',
+                            'rgba(102, 126, 234, 1)',
+                            'rgba(118, 75, 162, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    },
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
