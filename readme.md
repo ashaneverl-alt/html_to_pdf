@@ -1,13 +1,11 @@
 # 使用说明书
 ## 1.概述
 该服务提供了两个接口，允许用户将 HTML 文本或 HTML 文件转换为 PDF 文件。服务监听在指定的端口上（默认为 10030）。
-## pull
+## 启动
 ```
-docker pull 1505774577/html_to_pdf:1.0.0.dev
+node main.js
 ```
-## run
-```
-docker run -d -p 10030:10030 --cap-add=SYS_ADMIN 1505774577/html_to_pdf:1.0.0.dev
+## 调用方式
 ```
 ## 2.接口描述
 ### 2.1 /html-to-pdf (将 HTML 文本转换为 PDF)
