@@ -2,6 +2,7 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
+const path = require('path');
 let browserInstance;
 
 async function getBrowserInstance() {
@@ -47,6 +48,38 @@ async function generatePDFFromHTML(htmlString) {
             }
             endelementsToRemove.forEach(el => el.parentNode.removeChild(el));  
             updatedHtmlString = dom.serialize();
+        }
+        
+        // Embed local images as base64 to ensure they render in PDF
+        {
+            let domImg = new JSDOM(updatedHtmlString);
+            let documentImg = domImg.window.document;
+            const imgElements = documentImg.querySelectorAll('img');
+            for (let img of imgElements) {
+                let src = img.getAttribute('src');
+                if (src && !src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('data:')) {
+                    const filePath = path.isAbsolute(src) ? src : path.resolve(process.cwd(), src);
+                    if (fs.existsSync(filePath)) {
+                        const buffer = fs.readFileSync(filePath);
+                        const ext = path.extname(filePath).slice(1).toLowerCase();
+                        const mimeTypes = {
+                            'jpg': 'image/jpeg',
+                            'jpeg': 'image/jpeg',
+                            'png': 'image/png',
+                            'gif': 'image/gif',
+                            'bmp': 'image/bmp',
+                            'svg': 'image/svg+xml',
+                            'webp': 'image/webp'
+                        };
+                        const mime = mimeTypes[ext] || 'image/jpeg';
+                        const base64 = buffer.toString('base64');
+                        img.setAttribute('src', `data:${mime};base64,${base64}`);
+                    } else {
+                        console.warn(`Local image not found: ${filePath}`);
+                    }
+                }
+            }
+            updatedHtmlString = domImg.serialize();
         }
         
         // 设置内容并等待所有资源加载完成
