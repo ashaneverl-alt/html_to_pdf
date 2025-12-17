@@ -50,11 +50,47 @@ async function generatePDFFromHTML(htmlString) {
             updatedHtmlString = dom.serialize();
         }
         
-        // Embed local images as base64 to ensure they render in PDF
+        // Embed local resources: images as base64, CSS as inline styles, JS as inline scripts
         {
-            let domImg = new JSDOM(updatedHtmlString);
-            let documentImg = domImg.window.document;
-            const imgElements = documentImg.querySelectorAll('img');
+            let domRes = new JSDOM(updatedHtmlString);
+            let documentRes = domRes.window.document;
+            
+            // Handle local CSS
+            const linkElements = documentRes.querySelectorAll('link[rel="stylesheet"]');
+            for (let link of linkElements) {
+                let href = link.getAttribute('href');
+                if (href && !href.startsWith('http://') && !href.startsWith('https://')) {
+                    const filePath = path.isAbsolute(href) ? href : path.resolve(process.cwd(), href);
+                    if (fs.existsSync(filePath)) {
+                        const cssContent = fs.readFileSync(filePath, 'utf8');
+                        const styleTag = documentRes.createElement('style');
+                        styleTag.textContent = cssContent;
+                        link.parentNode.insertBefore(styleTag, link);
+                        link.remove();
+                    } else {
+                        console.warn(`Local CSS not found: ${filePath}`);
+                    }
+                }
+            }
+            
+            // Handle local JS
+            const scriptElements = documentRes.querySelectorAll('script[src]');
+            for (let script of scriptElements) {
+                let src = script.getAttribute('src');
+                if (src && !src.startsWith('http://') && !src.startsWith('https://')) {
+                    const filePath = path.isAbsolute(src) ? src : path.resolve(process.cwd(), src);
+                    if (fs.existsSync(filePath)) {
+                        const jsContent = fs.readFileSync(filePath, 'utf8');
+                        script.textContent = jsContent;
+                        script.removeAttribute('src');
+                    } else {
+                        console.warn(`Local JS not found: ${filePath}`);
+                    }
+                }
+            }
+            
+            // Handle local images
+            const imgElements = documentRes.querySelectorAll('img');
             for (let img of imgElements) {
                 let src = img.getAttribute('src');
                 if (src && !src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('data:')) {
@@ -79,7 +115,8 @@ async function generatePDFFromHTML(htmlString) {
                     }
                 }
             }
-            updatedHtmlString = domImg.serialize();
+            
+            updatedHtmlString = domRes.serialize();
         }
         
         // 设置内容并等待所有资源加载完成
